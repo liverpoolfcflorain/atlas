@@ -1,0 +1,1442 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Atlas Analytica — a professional newsletter for context, analysis and awareness.">
+  <title>Atlas Analytica — Newsletter</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* =========================================================
+       ATLAS ANALYTICA — PROFESSIONAL NEWSLETTER REDESIGN
+       Palette sampled/inspired from the supplied compass logo:
+       charcoal / graphite / cool silver / white / black.
+       ========================================================= */
+
+    :root {
+      --black: #101113;
+      --ink: #1d1f22;
+      --graphite: #3f4145;
+      --charcoal: #505256;
+      --slate: #6d7075;
+      --silver: #aeb1b5;
+      --mist: #d8d9db;
+      --paper: #f2f2f0;
+      --white: #ffffff;
+
+      --line: rgba(16, 17, 19, .16);
+      --line-light: rgba(16, 17, 19, .09);
+
+      --display: "Libre Baskerville", Georgia, serif;
+      --sans: "DM Sans", Arial, sans-serif;
+
+      --max: 1240px;
+      --ease: cubic-bezier(.2,.7,.2,1);
+      --shadow: 0 14px 45px rgba(16,17,19,.10);
+    }
+
+    * { box-sizing: border-box; }
+
+    html {
+      scroll-behavior: smooth;
+      background: var(--paper);
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 15% 5%, rgba(255,255,255,.8), transparent 28%),
+        var(--paper);
+      font-family: var(--sans);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body.is-loading { overflow: hidden; }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      opacity: .025;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    }
+
+    a { color: inherit; text-decoration: none; }
+    button, input { font: inherit; }
+
+    .wrap {
+      width: min(var(--max), calc(100% - 48px));
+      margin-inline: auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      color: var(--charcoal);
+      font-size: .68rem;
+      font-weight: 700;
+      letter-spacing: .17em;
+      text-transform: uppercase;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 22px;
+      height: 1px;
+      background: var(--charcoal);
+    }
+
+    /* =========================================================
+       LOADER — KEPT AS A CORE PART OF THE SITE
+       ========================================================= */
+
+    .loader {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      display: grid;
+      place-items: center;
+      background: var(--graphite);
+      transition: opacity .55s var(--ease), visibility .55s var(--ease);
+    }
+
+    .loader[data-state="hidden"] {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .loader-inner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 18px;
+      color: var(--white);
+    }
+
+    .loader-brand-img {
+      width: 82px;
+      height: 82px;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,.65);
+      animation: pulse-logo 1.8s infinite ease-in-out;
+    }
+
+    .loader-word {
+      font-family: var(--display);
+      font-size: .88rem;
+      letter-spacing: .26em;
+      text-transform: uppercase;
+      opacity: .9;
+    }
+
+    .loader-line {
+      width: 110px;
+      height: 1px;
+      background: rgba(255,255,255,.3);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .loader-line::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: var(--white);
+      transform: translateX(-100%);
+      animation: loading-line 1.3s ease-in-out infinite;
+    }
+
+    @keyframes pulse-logo {
+      0%,100% { transform: scale(1); opacity: .82; }
+      50% { transform: scale(1.055); opacity: 1; }
+    }
+
+    @keyframes loading-line {
+      0% { transform: translateX(-100%); }
+      50%,100% { transform: translateX(100%); }
+    }
+
+    /* =========================================================
+       HEADER / MASTHEAD
+       ========================================================= */
+
+    .site-header {
+      background: var(--white);
+      border-bottom: 1px solid var(--line);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .utility {
+      background: var(--black);
+      color: rgba(255,255,255,.78);
+      font-size: .69rem;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+
+    .utility-inner {
+      min-height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .utility strong { color: var(--white); }
+
+    .masthead {
+      padding: 22px 0 18px;
+    }
+
+    .masthead-inner {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 25px;
+    }
+
+    .masthead-side {
+      font-size: .72rem;
+      color: var(--slate);
+      line-height: 1.35;
+    }
+
+    .masthead-side:last-child { text-align: right; }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 13px;
+      justify-self: center;
+    }
+
+    .brand img {
+      width: 48px;
+      height: 48px;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 1px solid var(--line);
+    }
+
+    .brand-text {
+      text-align: left;
+    }
+
+    .brand-name {
+      font-family: var(--display);
+      font-size: clamp(1.25rem, 2vw, 1.65rem);
+      line-height: 1;
+      letter-spacing: -.025em;
+      color: var(--black);
+    }
+
+    .brand-kicker {
+      margin-top: 5px;
+      color: var(--slate);
+      font-size: .61rem;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+    }
+
+    .main-nav {
+      border-top: 1px solid var(--line-light);
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      padding: 9px 0;
+    }
+
+    .main-nav a {
+      padding: 6px 13px;
+      border-radius: 2px;
+      color: var(--graphite);
+      font-size: .75rem;
+      font-weight: 700;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      transition: background .2s, color .2s;
+    }
+
+    .main-nav a:hover,
+    .main-nav a.active {
+      background: var(--graphite);
+      color: var(--white);
+    }
+
+    /* =========================================================
+       BREAKING / NEWSLETTER TICKER
+       ========================================================= */
+
+    .ticker {
+      border-bottom: 1px solid var(--line);
+      background: var(--mist);
+      overflow: hidden;
+    }
+
+    .ticker-inner {
+      min-height: 39px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      white-space: nowrap;
+    }
+
+    .ticker-label {
+      flex: 0 0 auto;
+      background: var(--black);
+      color: var(--white);
+      padding: 5px 9px;
+      font-size: .62rem;
+      font-weight: 700;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+
+    .ticker-text {
+      color: var(--graphite);
+      font-size: .76rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* =========================================================
+       HERO — EDITORIAL NEWSLETTER LOOK
+       ========================================================= */
+
+    .hero {
+      padding: 62px 0 52px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(280px, .65fr);
+      gap: 52px;
+      align-items: end;
+    }
+
+    .hero h1 {
+      max-width: 850px;
+      margin: 12px 0 18px;
+      font-family: var(--display);
+      font-size: clamp(2.6rem, 6vw, 5.35rem);
+      line-height: 1.04;
+      letter-spacing: -.045em;
+      font-weight: 700;
+      color: var(--black);
+    }
+
+    .hero h1 em {
+      font-style: normal;
+      color: var(--charcoal);
+    }
+
+    .hero-intro {
+      max-width: 680px;
+      color: var(--slate);
+      font-size: clamp(1rem, 1.6vw, 1.14rem);
+    }
+
+    .hero-side {
+      border-left: 1px solid var(--line);
+      padding-left: 30px;
+    }
+
+    .hero-side h2 {
+      margin: 0 0 10px;
+      font-family: var(--display);
+      font-size: 1.35rem;
+      line-height: 1.25;
+      color: var(--black);
+    }
+
+    .hero-side p {
+      margin: 0;
+      color: var(--slate);
+      font-size: .88rem;
+    }
+
+    .hero-link {
+      display: inline-flex;
+      margin-top: 18px;
+      padding-bottom: 4px;
+      border-bottom: 1px solid var(--black);
+      font-size: .75rem;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    /* =========================================================
+       FEATURED STORY
+       ========================================================= */
+
+    .featured {
+      padding: 46px 0 58px;
+    }
+
+    .section-bar {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 24px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--black);
+    }
+
+    .section-bar h2 {
+      margin: 5px 0 0;
+      font-family: var(--display);
+      font-size: clamp(1.45rem, 3vw, 2rem);
+      line-height: 1.2;
+    }
+
+    .section-count {
+      color: var(--slate);
+      font-size: .73rem;
+      white-space: nowrap;
+    }
+
+    .featured-card {
+      display: grid;
+      grid-template-columns: 1.12fr .88fr;
+      min-height: 430px;
+      background: var(--white);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+    }
+
+    .featured-visual {
+      min-height: 430px;
+      position: relative;
+      overflow: hidden;
+      background:
+        linear-gradient(135deg, rgba(16,17,19,.72), rgba(80,82,86,.42)),
+        url("assets/articles/sahel.jpg") center/cover no-repeat,
+        var(--graphite);
+    }
+
+    .featured-visual::after {
+      content: "AA";
+      position: absolute;
+      right: 22px;
+      bottom: -24px;
+      font-family: var(--display);
+      font-size: 9rem;
+      color: rgba(255,255,255,.10);
+      font-weight: 700;
+    }
+
+    .featured-visual-label {
+      position: absolute;
+      top: 22px;
+      left: 22px;
+      padding: 6px 9px;
+      background: rgba(255,255,255,.92);
+      color: var(--black);
+      font-size: .64rem;
+      font-weight: 700;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+    }
+
+    .featured-copy {
+      padding: 46px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .featured-copy h3 {
+      margin: 12px 0 15px;
+      font-family: var(--display);
+      font-size: clamp(1.8rem, 3vw, 2.65rem);
+      line-height: 1.16;
+      letter-spacing: -.025em;
+      color: var(--black);
+    }
+
+    .featured-copy p {
+      margin: 0;
+      color: var(--slate);
+      font-size: .95rem;
+      max-width: 52ch;
+    }
+
+    .story-meta {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+      margin-top: 25px;
+      color: var(--slate);
+      font-size: .72rem;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    .story-meta span + span::before {
+      content: "•";
+      margin-right: 15px;
+      color: var(--silver);
+    }
+
+    .read-link {
+      width: fit-content;
+      margin-top: 24px;
+      padding: 10px 14px;
+      background: var(--black);
+      color: var(--white);
+      font-size: .71rem;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      transition: transform .2s var(--ease), background .2s;
+    }
+
+    .read-link:hover {
+      background: var(--charcoal);
+      transform: translateY(-2px);
+    }
+
+    /* =========================================================
+       ARTICLE GRID
+       ========================================================= */
+
+    .latest {
+      background: var(--white);
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      padding: 52px 0 65px;
+    }
+
+    .article-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 24px;
+    }
+
+    .article-card {
+      grid-column: span 6;
+      display: grid;
+      grid-template-columns: 180px 1fr;
+      min-height: 220px;
+      border: 1px solid var(--line);
+      background: var(--paper);
+      transition: transform .25s var(--ease), box-shadow .25s var(--ease), border-color .25s;
+    }
+
+    .article-card:nth-child(n+3) {
+      grid-column: span 4;
+      display: block;
+    }
+
+    .article-card:hover {
+      transform: translateY(-5px);
+      border-color: var(--charcoal);
+      box-shadow: var(--shadow);
+    }
+
+    .article-image {
+      min-height: 220px;
+      background-color: var(--charcoal);
+      background-position: center;
+      background-size: cover;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .article-image::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(16,17,19,.2), rgba(16,17,19,.5));
+    }
+
+    .article-card:nth-child(n+3) .article-image {
+      height: 190px;
+      min-height: 0;
+    }
+
+    .article-copy {
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .article-tag {
+      color: var(--charcoal);
+      font-size: .63rem;
+      font-weight: 700;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+
+    .article-copy h3 {
+      margin: 9px 0 10px;
+      font-family: var(--display);
+      font-size: 1.18rem;
+      line-height: 1.28;
+      color: var(--black);
+    }
+
+    .article-copy p {
+      margin: 0;
+      color: var(--slate);
+      font-size: .82rem;
+      line-height: 1.6;
+      flex: 1;
+    }
+
+    .article-meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding-top: 15px;
+      margin-top: 17px;
+      border-top: 1px solid var(--line);
+      color: var(--slate);
+      font-size: .66rem;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+    }
+
+    .article-link {
+      display: inline-block;
+      margin-top: 13px;
+      font-size: .7rem;
+      font-weight: 700;
+      color: var(--black);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    .article-link:hover { text-decoration: underline; }
+
+    /* =========================================================
+       ABOUT / EDITORIAL NOTE
+       ========================================================= */
+
+    .about {
+      padding: 72px 0 82px;
+    }
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: .72fr 1.28fr;
+      gap: 60px;
+      align-items: start;
+    }
+
+    .about h2 {
+      margin: 8px 0 0;
+      font-family: var(--display);
+      font-size: clamp(1.7rem, 3.5vw, 2.8rem);
+      line-height: 1.18;
+      color: var(--black);
+    }
+
+    .about-copy {
+      columns: 2;
+      column-gap: 42px;
+      color: var(--slate);
+      font-size: .94rem;
+    }
+
+    .about-copy p {
+      margin: 0 0 18px;
+      break-inside: avoid;
+    }
+
+    /* =========================================================
+       TEAM / ABOUT ME
+       ========================================================= */
+
+    .team-section {
+      margin-top: 62px;
+      padding-top: 34px;
+      border-top: 1px solid var(--line);
+    }
+
+    .team-heading {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+
+    .team-heading h3 {
+      margin: 7px 0 0;
+      font-family: var(--display);
+      font-size: clamp(1.45rem, 3vw, 2rem);
+      line-height: 1.2;
+      color: var(--black);
+    }
+
+    .team-heading p {
+      max-width: 38ch;
+      margin: 0;
+      color: var(--slate);
+      font-size: .78rem;
+    }
+
+    .team-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 24px;
+    }
+
+    .team-card {
+      display: grid;
+      grid-template-columns: 145px 1fr;
+      min-height: 185px;
+      background: var(--white);
+      border: 1px solid var(--line);
+      transition: transform .25s var(--ease), box-shadow .25s var(--ease), border-color .25s;
+    }
+
+    .team-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--charcoal);
+      box-shadow: var(--shadow);
+    }
+
+    .team-photo {
+      width: 100%;
+      height: 100%;
+      min-height: 185px;
+      object-fit: cover;
+      display: block;
+      background: var(--mist);
+      filter: grayscale(18%);
+    }
+
+    .team-info {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .team-role {
+      color: var(--charcoal);
+      font-size: .63rem;
+      font-weight: 700;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      margin-bottom: 7px;
+    }
+
+    .team-name {
+      margin: 0;
+      font-family: var(--display);
+      font-size: 1.25rem;
+      line-height: 1.25;
+      color: var(--black);
+    }
+
+    .team-bio {
+      margin: 9px 0 0;
+      color: var(--slate);
+      font-size: .78rem;
+      line-height: 1.55;
+    }
+
+    /* =========================================================
+       NEWSLETTER SIGNUP
+       ========================================================= */
+
+    .subscribe {
+      background: var(--graphite);
+      color: var(--white);
+      padding: 54px 0;
+    }
+
+    .subscribe-inner {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 45px;
+      align-items: center;
+    }
+
+    .subscribe h2 {
+      margin: 6px 0 7px;
+      font-family: var(--display);
+      font-size: clamp(1.5rem, 3vw, 2.2rem);
+      line-height: 1.2;
+    }
+
+    .subscribe p {
+      margin: 0;
+      max-width: 62ch;
+      color: rgba(255,255,255,.7);
+      font-size: .86rem;
+    }
+
+    .subscribe .eyebrow {
+      color: var(--mist);
+    }
+
+    .subscribe .eyebrow::before { background: var(--mist); }
+
+    .subscribe-form {
+      display: flex;
+      min-width: min(440px, 100%);
+    }
+
+    .subscribe-form input {
+      width: 260px;
+      min-width: 0;
+      border: 1px solid rgba(255,255,255,.25);
+      border-right: 0;
+      padding: 13px 15px;
+      outline: none;
+      background: rgba(255,255,255,.08);
+      color: var(--white);
+    }
+
+    .subscribe-form input::placeholder { color: rgba(255,255,255,.55); }
+
+    .subscribe-form button {
+      border: 1px solid var(--white);
+      padding: 0 18px;
+      background: var(--white);
+      color: var(--black);
+      cursor: pointer;
+      font-size: .68rem;
+      font-weight: 700;
+      letter-spacing: .09em;
+      text-transform: uppercase;
+      transition: background .2s, color .2s;
+    }
+
+    .subscribe-form button:hover {
+      background: var(--mist);
+    }
+
+    /* =========================================================
+       FOOTER
+       ========================================================= */
+
+    footer {
+      background: var(--black);
+      color: rgba(255,255,255,.7);
+      padding: 46px 0 25px;
+    }
+
+    .footer-top {
+      display: grid;
+      grid-template-columns: 1.3fr .7fr .7fr;
+      gap: 40px;
+      padding-bottom: 38px;
+    }
+
+    .footer-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .footer-brand img {
+      width: 42px;
+      height: 42px;
+      object-fit: cover;
+      border-radius: 50%;
+    }
+
+    .footer-brand-name {
+      color: var(--white);
+      font-family: var(--display);
+      font-size: 1.05rem;
+    }
+
+    .footer-brand p {
+      margin: 6px 0 0;
+      font-size: .72rem;
+      color: rgba(255,255,255,.48);
+    }
+
+    .footer-col h3 {
+      margin: 0 0 11px;
+      color: var(--white);
+      font-size: .66rem;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+    }
+
+    .footer-col a {
+      display: block;
+      margin: 5px 0;
+      font-size: .75rem;
+      color: rgba(255,255,255,.58);
+    }
+
+    .footer-col a:hover { color: var(--white); }
+
+    .footer-bottom {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      padding-top: 18px;
+      border-top: 1px solid rgba(255,255,255,.14);
+      font-size: .66rem;
+      color: rgba(255,255,255,.38);
+    }
+
+    /* =========================================================
+       RESPONSIVE
+       ========================================================= */
+
+    @media (max-width: 900px) {
+      .wrap { width: min(var(--max), calc(100% - 32px)); }
+
+      .masthead-inner {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+
+      .masthead-side,
+      .masthead-side:last-child { text-align: center; }
+
+      .brand { justify-self: center; }
+
+      .hero-grid,
+      .featured-card,
+      .about-grid,
+      .subscribe-inner {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-side {
+        border-left: 0;
+        border-top: 1px solid var(--line);
+        padding: 25px 0 0;
+      }
+
+      .featured-visual {
+        min-height: 320px;
+      }
+
+      .article-card,
+      .article-card:nth-child(n+3) {
+        grid-column: span 6;
+      }
+
+      .article-card {
+        display: block;
+      }
+
+      .article-image {
+        height: 190px;
+        min-height: 0;
+      }
+
+      .about-copy { columns: 1; }
+
+      .team-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .subscribe-form {
+        min-width: 0;
+        width: 100%;
+      }
+
+      .subscribe-form input { width: 100%; }
+
+      .footer-top { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 620px) {
+      .wrap { width: min(var(--max), calc(100% - 24px)); }
+
+      .utility-inner { justify-content: center; }
+
+      .utility-inner > span:last-child { display: none; }
+
+      .masthead { padding: 17px 0 13px; }
+
+      .main-nav {
+        overflow-x: auto;
+        justify-content: flex-start;
+        padding-inline: 4px;
+      }
+
+      .main-nav a { white-space: nowrap; }
+
+      .hero { padding: 42px 0; }
+
+      .hero h1 { font-size: 2.55rem; }
+
+      .featured-copy { padding: 30px 24px; }
+
+      .article-card,
+      .article-card:nth-child(n+3) {
+        grid-column: span 12;
+      }
+
+      .section-bar { align-items: start; }
+
+      .section-count { display: none; }
+
+      .subscribe-form {
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .subscribe-form input,
+      .subscribe-form button {
+        width: 100%;
+        border: 1px solid rgba(255,255,255,.25);
+        min-height: 46px;
+      }
+
+      .subscribe-form button { border-color: var(--white); }
+
+      .footer-top { grid-template-columns: 1fr; gap: 28px; }
+
+      .footer-bottom { flex-direction: column; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+      }
+    }
+  </style>
+</head>
+
+<body class="is-loading">
+
+  <!-- =======================================================
+       LOADER — intentionally retained
+       ======================================================= -->
+  <div id="loader" class="loader" role="status" aria-live="polite">
+    <div class="loader-inner">
+      <img src="assets/logo.jpg" alt="Atlas Analytica compass logo" class="loader-brand-img"
+           onerror="this.onerror=null;this.src='assets/logo.png'">
+      <div class="loader-word">Atlas Analytica</div>
+      <div class="loader-line" aria-hidden="true"></div>
+      <span class="sr-only">Loading Atlas Analytica</span>
+    </div>
+  </div>
+
+  <header class="site-header">
+    <div class="utility">
+      <div class="wrap utility-inner">
+        <span><strong>Atlas Analytica</strong> · The independent briefing</span>
+        <span id="today"></span>
+      </div>
+    </div>
+
+    <div class="masthead">
+      <div class="wrap masthead-inner">
+        <div class="masthead-side">
+          A publication for<br>context over noise.
+        </div>
+
+        <a href="#" class="brand" aria-label="Atlas Analytica home">
+          <img src="assets/logo.jpg" alt="Atlas Analytica compass logo"
+               onerror="this.onerror=null;this.src='assets/logo.png'">
+          <div class="brand-text">
+            <div class="brand-name">Atlas Analytica</div>
+            <div class="brand-kicker">Awareness · Analysis · Perspective</div>
+          </div>
+        </a>
+
+        <div class="masthead-side">
+          Research-led reporting<br>with a human lens.
+        </div>
+      </div>
+    </div>
+
+    <nav class="main-nav" aria-label="Main navigation">
+      <a class="active" href="#latest">Latest</a>
+      <a href="#featured">Featured</a>
+      <a href="#about">About</a>
+      <a href="#subscribe">Newsletter</a>
+      <a href="https://www.instagram.com/atlas.analytica/" target="_blank" rel="noreferrer">Instagram ↗</a>
+    </nav>
+  </header>
+
+  <div class="ticker">
+    <div class="wrap ticker-inner">
+      <span class="ticker-label">The Brief</span>
+      <span class="ticker-text">Research-led analysis of international affairs, conflict, humanitarian crises and the forces shaping our world.</span>
+    </div>
+  </div>
+
+  <main>
+    <section class="hero">
+      <div class="wrap hero-grid">
+        <div>
+          <span class="eyebrow">Atlas Analytica</span>
+          <h1>Making sense of <em>a changing world.</em></h1>
+          <p class="hero-intro">
+            Concise, accessible analysis of major global developments — built to give readers
+            context, not simply another stream of headlines.
+          </p>
+        </div>
+
+        <aside class="hero-side">
+          <span class="eyebrow">Our approach</span>
+          <h2>Read beyond the headline.</h2>
+          <p>
+            We connect current events with the political, social and historical forces behind them,
+            while keeping the writing clear and accessible.
+          </p>
+          <a class="hero-link" href="#latest">Explore the latest →</a>
+        </aside>
+      </div>
+    </section>
+
+    <section class="featured" id="featured">
+      <div class="wrap">
+        <div class="section-bar">
+          <div>
+            <span class="eyebrow">Editor's selection</span>
+            <h2>Featured analysis</h2>
+          </div>
+          <span class="section-count">September 2026</span>
+        </div>
+
+        <article class="featured-card">
+          <div class="featured-visual" role="img" aria-label="Featured article visual">
+            <span class="featured-visual-label">Conflict</span>
+          </div>
+
+          <div class="featured-copy">
+            <span class="article-tag">September 2026 · 8 min read</span>
+            <h3>The fault lines redrawing the Sahel</h3>
+            <p>
+              How overlapping insurgencies and shifting foreign alliances are reshaping a region
+              already strained by climate pressure.
+            </p>
+            <div class="story-meta">
+              <span>Atlas Analytica</span>
+              <span>Long read</span>
+            </div>
+            <a class="read-link" href="article.html?id=sahel-fault-lines">Read the analysis →</a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="latest" id="latest">
+      <div class="wrap">
+        <div class="section-bar">
+          <div>
+            <span class="eyebrow">Latest publications</span>
+            <h2>From the desk</h2>
+          </div>
+          <span class="section-count" id="articleCount"></span>
+        </div>
+
+        <div class="article-grid" id="articleGrid"></div>
+      </div>
+    </section>
+
+    <section class="about" id="about">
+      <div class="wrap">
+        <div class="about-grid">
+          <div>
+            <span class="eyebrow">About Atlas Analytica</span>
+            <h2>Independent analysis for a complex world.</h2>
+          </div>
+
+          <div class="about-copy">
+            <p>
+              Atlas Analytica examines major international developments through concise,
+              accessible research. Each publication presents its subject in context,
+              connecting current events with the political, social and historical forces behind them.
+            </p>
+            <p>
+              Our goal is simple: to make difficult subjects easier to understand without
+              stripping away the complexity that makes them matter.
+            </p>
+            <p>
+              The publication is built around awareness and empathy — giving readers the
+              information needed to engage thoughtfully with the world around them.
+            </p>
+          </div>
+        </div>
+
+        <div class="team-section" id="team">
+          <div class="team-heading">
+            <div>
+              <span class="eyebrow">About me</span>
+              <h3>Meet the team</h3>
+            </div>
+            <p>
+              Add the people behind Atlas Analytica here — with their photograph,
+              name, and role.
+            </p>
+          </div>
+
+          <div class="team-grid" id="teamGrid"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="subscribe" id="subscribe">
+      <div class="wrap subscribe-inner">
+        <div>
+          <span class="eyebrow">The Atlas briefing</span>
+          <h2>Get the next edition in your inbox.</h2>
+          <p>
+            A concise selection of our latest analysis. No noise — just the stories,
+            context and research worth making time for.
+          </p>
+        </div>
+
+        <form class="subscribe-form" id="subscribeForm">
+          <input type="email" id="email" placeholder="Your email address" aria-label="Email address" required>
+          <button type="submit">Subscribe</button>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <div class="footer-top">
+        <div>
+          <div class="footer-brand">
+            <img src="assets/logo.jpg" alt="Atlas Analytica compass logo"
+                 onerror="this.onerror=null;this.src='assets/logo.png'">
+            <div>
+              <div class="footer-brand-name">Atlas Analytica</div>
+              <p>Inculcating empathy through awareness.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="footer-col">
+          <h3>Explore</h3>
+          <a href="#latest">Latest articles</a>
+          <a href="#featured">Featured</a>
+          <a href="#about">About us</a>
+        </div>
+
+        <div class="footer-col">
+          <h3>Connect</h3>
+          <a href="https://www.instagram.com/atlas.analytica/" target="_blank" rel="noreferrer">Instagram ↗</a>
+          <a href="#subscribe">Newsletter</a>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <span>© <span id="year"></span> Atlas Analytica</span>
+        <span>Built for research, not noise.</span>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    /* =========================================================
+       LOADER — retained from the original site, redesigned
+       ========================================================= */
+    (function initLoader() {
+      const loader = document.getElementById("loader");
+      if (!loader) return;
+
+      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const minVisibleMs = reduceMotion ? 0 : 700;
+      const start = Date.now();
+
+      function dismiss() {
+        const elapsed = Date.now() - start;
+        const wait = Math.max(0, minVisibleMs - elapsed);
+
+        window.setTimeout(() => {
+          loader.setAttribute("data-state", "hidden");
+          document.body.classList.remove("is-loading");
+        }, wait);
+      }
+
+      if (document.readyState === "complete") {
+        dismiss();
+      } else {
+        window.addEventListener("load", dismiss, { once: true });
+      }
+    })();
+
+    const ARTICLES = [
+      {
+        id: "sahel-fault-lines",
+        tag: "Conflict",
+        title: "The fault lines redrawing the Sahel",
+        excerpt: "How overlapping insurgencies and shifting foreign alliances are reshaping a region already strained by climate pressure.",
+        date: "Sep 2026",
+        readTime: "8 min read",
+        bgImage: "assets/articles/sahel.jpg"
+      },
+      {
+        id: "displacement-without-a-horizon",
+        tag: "Humanitarian",
+        title: "Displacement without a horizon",
+        excerpt: "A look at protracted displacement crises where return is no longer the working assumption of aid planning.",
+        date: "Aug 2026",
+        readTime: "6 min read",
+        bgImage: "assets/articles/displacement.jpg"
+      },
+      {
+        id: "sanctions-quiet-costs",
+        tag: "Policy",
+        title: "Sanctions regimes and their quiet costs",
+        excerpt: "Economic sanctions are a blunt instrument. We examine who actually absorbs the impact, and for how long.",
+        date: "Aug 2026",
+        readTime: "10 min read",
+        bgImage: "assets/articles/sanctions.jpg"
+      },
+      {
+        id: "new-arithmetic-of-alliances",
+        tag: "Geopolitics",
+        title: "The new arithmetic of alliances",
+        excerpt: "Middle powers are hedging rather than choosing sides. What that means for the next decade of coalition-building.",
+        date: "Jul 2026",
+        readTime: "7 min read",
+        bgImage: "assets/articles/alliances.jpg"
+      }
+    ];
+
+    function renderArticles(articles) {
+      const grid = document.getElementById("articleGrid");
+      const count = document.getElementById("articleCount");
+      if (!grid) return;
+
+      grid.innerHTML = "";
+
+      articles.forEach((article) => {
+        const card = document.createElement("article");
+        card.className = "article-card";
+
+        card.innerHTML = `
+          <div class="article-image" aria-hidden="true" title="${article.title}"></div>
+          <div class="article-copy">
+            <span class="article-tag">${article.tag}</span>
+            <h3>${article.title}</h3>
+            <p>${article.excerpt}</p>
+            <div class="article-meta">
+              <span>${article.date}</span>
+              <span>${article.readTime}</span>
+            </div>
+            <a class="article-link" href="article.html?id=${encodeURIComponent(article.id)}">Read the analysis →</a>
+          </div>
+        `;
+
+        const image = card.querySelector(".article-image");
+        if (article.bgImage) {
+          image.style.backgroundImage =
+            `linear-gradient(135deg, rgba(16,17,19,.22), rgba(16,17,19,.5)), url("${article.bgImage}")`;
+        }
+
+        grid.appendChild(card);
+      });
+
+      if (count) {
+        count.textContent = `${articles.length} publication${articles.length === 1 ? "" : "s"}`;
+      }
+    }
+
+    renderArticles(ARTICLES);
+
+    /* =========================================================
+       TEAM DATA — edit these two entries to add your people
+       ========================================================= */
+    const TEAM = [
+      {
+        name: "Your Name",
+        title: "Founder & Editor-in-Chief",
+        bio: "Add a short introduction about this team member here.",
+        image: "assets/team/person-one.jpg"
+      },
+      {
+        name: "Second Team Member",
+        title: "Co-Founder & Research Lead",
+        bio: "Add a short introduction about this team member here.",
+        image: "assets/team/person-two.jpg"
+      }
+    ];
+
+    function renderTeam(team) {
+      const grid = document.getElementById("teamGrid");
+      if (!grid) return;
+
+      grid.innerHTML = "";
+
+      team.slice(0, 2).forEach((person) => {
+        const card = document.createElement("article");
+        card.className = "team-card";
+
+        card.innerHTML = `
+          <img class="team-photo"
+               src="${person.image}"
+               alt="${person.name}"
+               loading="lazy"
+               onerror="this.onerror=null;this.src='assets/logo.jpg'">
+          <div class="team-info">
+            <div class="team-role">${person.title}</div>
+            <h4 class="team-name">${person.name}</h4>
+            <p class="team-bio">${person.bio}</p>
+          </div>
+        `;
+
+        grid.appendChild(card);
+      });
+    }
+
+    renderTeam(TEAM);
+
+    const yearEl = document.getElementById("year");
+    if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+    const todayEl = document.getElementById("today");
+    if (todayEl) {
+      todayEl.textContent = new Intl.DateTimeFormat("en", {
+        month: "long",
+        day: "numeric",
+        year: "numeric"
+      }).format(new Date());
+    }
+
+    const subscribeForm = document.getElementById("subscribeForm");
+    subscribeForm?.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const input = document.getElementById("email");
+      const button = subscribeForm.querySelector("button");
+
+      if (!input.value.trim()) return;
+
+      button.textContent = "Subscribed ✓";
+      input.value = "";
+      button.disabled = true;
+
+      setTimeout(() => {
+        button.textContent = "Subscribe";
+        button.disabled = false;
+      }, 3500);
+    });
+  </script>
+</body>
+</html>
