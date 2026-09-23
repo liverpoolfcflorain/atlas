@@ -1252,10 +1252,37 @@
     </div>
   </footer>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+
   <script>
     /* =========================================================
-       LOADER — retained from the original site, redesigned
+       SUPABASE CLIENT
        ========================================================= */
+    let atlasSupabase = null;
+
+    const SUPABASE_CONFIGURED =
+      typeof window.supabase !== "undefined" &&
+      typeof window.supabase.createClient === "function" &&
+      typeof window.ATLAS_SUPABASE_URL === "string" &&
+      typeof window.ATLAS_SUPABASE_KEY === "string" &&
+      window.ATLAS_SUPABASE_URL.trim() !== "" &&
+      window.ATLAS_SUPABASE_KEY.trim() !== "" &&
+      !window.ATLAS_SUPABASE_URL.includes("YOUR_PROJECT") &&
+      !window.ATLAS_SUPABASE_KEY.includes("YOUR_PUBLISHABLE_OR_ANON_KEY");
+
+    if (SUPABASE_CONFIGURED) {
+      atlasSupabase = window.supabase.createClient(
+        window.ATLAS_SUPABASE_URL,
+        window.ATLAS_SUPABASE_KEY
+      );
+    } else {
+      console.warn(
+        "Atlas Analytica: Supabase is not configured. Using local fallback articles."
+      );
+    }
+
+    
     (function initLoader() {
       const loader = document.getElementById("loader");
       if (!loader) return;
@@ -1281,7 +1308,10 @@
       }
     })();
 
-    const ARTICLES = [
+    /*
+     * Local fallback data. Supabase is used when configured.
+     */
+    const FALLBACK_ARTICLES = [
       {
         id: "sahel-fault-lines",
         tag: "Conflict",
@@ -1320,6 +1350,31 @@
       }
     ];
 
+    function escapeHTML(value) {
+      return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function normalizeArticle(article) {
+      return {
+        id: article.id,
+        tag: article.tag || "Analysis",
+        title: article.title || "Untitled article",
+        excerpt: article.excerpt || "",
+        date: article.date || article.created_at || "",
+        readTime: article.read_time
+          ? (String(article.read_time).toLowerCase().includes("min")
+              ? article.read_time
+              : `${article.read_time} min read`)
+          : "Read",
+        bgImage: article.image || article.bgImage || ""
+      };
+    }
+
     function renderArticles(articles) {
       const grid = document.getElementById("articleGrid");
       const count = document.getElementById("articleCount");
@@ -1327,19 +1382,20 @@
 
       grid.innerHTML = "";
 
-      articles.forEach((article) => {
+      articles.forEach((rawArticle) => {
+        const article = normalizeArticle(rawArticle);
         const card = document.createElement("article");
         card.className = "article-card";
 
         card.innerHTML = `
-          <div class="article-image" aria-hidden="true" title="${article.title}"></div>
+          <div class="article-image" aria-hidden="true" title="${escapeHTML(article.title)}"></div>
           <div class="article-copy">
-            <span class="article-tag">${article.tag}</span>
-            <h3>${article.title}</h3>
-            <p>${article.excerpt}</p>
+            <span class="article-tag">${escapeHTML(article.tag)}</span>
+            <h3>${escapeHTML(article.title)}</h3>
+            <p>${escapeHTML(article.excerpt)}</p>
             <div class="article-meta">
-              <span>${article.date}</span>
-              <span>${article.readTime}</span>
+              <span>${escapeHTML(article.date)}</span>
+              <span>${escapeHTML(article.readTime)}</span>
             </div>
             <a class="article-link" href="article.html?id=${encodeURIComponent(article.id)}">Read the analysis →</a>
           </div>
@@ -1348,18 +1404,57 @@
         const image = card.querySelector(".article-image");
         if (article.bgImage) {
           image.style.backgroundImage =
-            `linear-gradient(135deg, rgba(16,17,19,.22), rgba(16,17,19,.5)), url("${article.bgImage}")`;
+            `linear-gradient(135deg, rgba(16,17,19,.22), rgba(16,17,19,.5)), url("${String(article.bgImage).replace(/"/g, '\\"')}")`;
         }
 
         grid.appendChild(card);
       });
 
       if (count) {
-        count.textContent = `${articles.length} publication${articles.length === 1 ? "" : "s"}`;
+        count.textContent =
+          `${articles.length} publication${articles.length === 1 ? "" : "s"}`;
       }
     }
 
-    renderArticles(ARTICLES);
+    async function loadPublicArticles() {
+      if (!atlasSupabase) {
+        renderArticles(FALLBACK_ARTICLES);
+        return;
+      }
+
+      try {
+        const { data, error } = await atlasSupabase
+          .from("articles")
+          .select("*")
+          .eq("status", "published")
+          .order("date", { ascending: false });
+
+        if (error) {
+          console.error(
+            "Atlas Analytica: could not load Supabase articles.",
+            error
+          );
+          renderArticles(FALLBACK_ARTICLES);
+          return;
+        }
+
+        const articles = Array.isArray(data)
+          ? data.map(normalizeArticle)
+          : [];
+
+        renderArticles(
+          articles.length > 0 ? articles : FALLBACK_ARTICLES
+        );
+      } catch (error) {
+        console.error(
+          "Atlas Analytica: unexpected Supabase error.",
+          error
+        );
+        renderArticles(FALLBACK_ARTICLES);
+      }
+    }
+
+    loadPublicArticles();
 
     /* =========================================================
        TEAM DATA — edit these two entries to add your people

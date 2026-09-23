@@ -1,0 +1,2062 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Atlas Analytica — Admin</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+
+  <style>
+    :root {
+      --black: #101113;
+      --ink: #1d1f22;
+      --graphite: #3f4145;
+      --slate: #6d7075;
+      --mist: #d8d9db;
+      --paper: #f2f2f0;
+      --white: #fff;
+      --line: rgba(16, 17, 19, .12);
+      --shadow: 0 14px 45px rgba(16, 17, 19, .08);
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font: 14px/1.55 Arial, sans-serif
+    }
+
+    button,
+    input,
+    textarea,
+    select {
+      font: inherit
+    }
+
+    .shell {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 240px 1fr
+    }
+
+    aside {
+      background: var(--black);
+      color: #fff;
+      padding: 28px 18px;
+      position: sticky;
+      top: 0;
+      height: 100vh
+    }
+
+    .logo {
+      font: 700 20px Georgia, serif;
+      margin: 0 10px 5px
+    }
+
+    .sub {
+      color: #aaa;
+      font-size: 11px;
+      margin: 0 10px 28px
+    }
+
+    nav button {
+      width: 100%;
+      border: 0;
+      background: transparent;
+      color: #bbb;
+      text-align: left;
+      padding: 12px 13px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 2px 0
+    }
+
+    nav button.active,
+    nav button:hover {
+      background: #fff;
+      color: var(--black)
+    }
+
+    main {
+      padding: 38px;
+      max-width: 1280px;
+      width: 100%
+    }
+
+    .top {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      margin-bottom: 30px
+    }
+
+    .eyebrow {
+      text-transform: uppercase;
+      letter-spacing: .16em;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--slate)
+    }
+
+    h1 {
+      font: 700 36px/1.1 Georgia, serif;
+      margin: 6px 0
+    }
+
+    h2 {
+      font-family: Georgia, serif
+    }
+
+    .muted {
+      color: var(--slate)
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px
+    }
+
+    .btn {
+      border: 1px solid var(--black);
+      background: #fff;
+      padding: 10px 15px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 12px
+    }
+
+    .btn.primary {
+      background: var(--black);
+      color: #fff
+    }
+
+    .btn.danger {
+      border-color: #9a2f2f;
+      color: #9a2f2f
+    }
+
+    .btn:disabled {
+      opacity: .5;
+      cursor: not-allowed
+    }
+
+    .panel {
+      background: #fff;
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      padding: 24px;
+      margin-bottom: 24px
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px
+    }
+
+    .stat {
+      background: #fff;
+      border: 1px solid var(--line);
+      padding: 20px
+    }
+
+    .stat strong {
+      display: block;
+      font: 700 30px Georgia, serif
+    }
+
+    .stat span {
+      color: var(--slate);
+      font-size: 12px
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse
+    }
+
+    th,
+    td {
+      text-align: left;
+      padding: 13px 10px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top
+    }
+
+    th {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--slate)
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 7px;
+      background: var(--mist);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: .08em
+    }
+
+    .badge.published {
+      background: #e3eee5
+    }
+
+    .badge.draft {
+      background: #eee9df
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 22px
+    }
+
+    .field {
+      margin-bottom: 17px
+    }
+
+    .field label {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .09em;
+      margin-bottom: 7px
+    }
+
+    .field input,
+    .field textarea,
+    .field select {
+      width: 100%;
+      border: 1px solid #c8c9cb;
+      background: #fff;
+      padding: 11px 12px;
+      outline: none
+    }
+
+    .field textarea {
+      min-height: 180px;
+      resize: vertical
+    }
+
+    .content {
+      min-height: 420px !important
+    }
+
+    .upload {
+      border: 1px dashed #aaa;
+      padding: 18px;
+      background: #fafafa
+    }
+
+    .preview {
+      width: 100%;
+      aspect-ratio: 16/9;
+      object-fit: cover;
+      margin-top: 10px;
+      display: none;
+      border: 1px solid var(--line)
+    }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 15px;
+      margin-bottom: 15px
+    }
+
+    .search {
+      max-width: 350px;
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #bbb
+    }
+
+    .empty {
+      text-align: center;
+      padding: 50px;
+      color: var(--slate)
+    }
+
+    .hidden {
+      display: none !important
+    }
+
+    .toast {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      background: var(--black);
+      color: #fff;
+      padding: 13px 17px;
+      display: none;
+      box-shadow: var(--shadow);
+      z-index: 10
+    }
+
+    .login {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px
+    }
+
+    .login-card {
+      width: min(460px, 100%);
+      background: #fff;
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      padding: 32px
+    }
+
+    .login-card h1 {
+      font-size: 30px
+    }
+
+    .notice {
+      padding: 12px;
+      background: #f5eee1;
+      border: 1px solid #dfcda9;
+      font-size: 12px;
+      margin-bottom: 18px
+    }
+
+    .error {
+      padding: 12px;
+      background: #f8e6e6;
+      border: 1px solid #d6a7a7;
+      font-size: 12px;
+      margin-bottom: 18px
+    }
+
+    .success {
+      padding: 12px;
+      background: #e5f0e7;
+      border: 1px solid #abc5b0;
+      font-size: 12px;
+      margin-bottom: 18px
+    }
+
+    .session {
+      font-size: 11px;
+      color: #aaa;
+      margin: 22px 10px
+    }
+
+    .session button {
+      background: none;
+      border: 0;
+      color: #fff;
+      padding: 0;
+      text-decoration: underline;
+      cursor: pointer
+    }
+
+    @media(max-width:850px) {
+
+      .shell {
+        grid-template-columns: 1fr
+      }
+
+      aside {
+        height: auto;
+        position: relative
+      }
+
+      .stats,
+      .form-grid {
+        grid-template-columns: 1fr
+      }
+
+      main {
+        padding: 20px
+      }
+
+      .top {
+        align-items: start;
+        gap: 15px;
+        flex-direction: column
+      }
+
+      table {
+        font-size: 12px
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- LOGIN -->
+
+  <div id="loginView" class="login hidden">
+
+    <div class="login-card">
+
+      <div class="eyebrow">
+        Atlas Analytica
+      </div>
+
+      <h1>
+        Admin login
+      </h1>
+
+      <p class="muted">
+        Sign in with the Supabase Auth account that has been added to
+        <code>admin_users</code>.
+      </p>
+
+      <div id="loginMessage"></div>
+
+      <form id="loginForm">
+
+        <div class="field">
+          <label>Email</label>
+          <input id="loginEmail" type="email" required autocomplete="email">
+        </div>
+
+        <div class="field">
+          <label>Password</label>
+          <input id="loginPassword" type="password" required autocomplete="current-password">
+        </div>
+
+        <button class="btn primary" style="width:100%" type="submit">
+          Sign in
+        </button>
+
+      </form>
+
+    </div>
+
+  </div>
+
+
+  <!-- ADMIN APP -->
+
+  <div id="appView" class="shell hidden">
+
+    <aside>
+
+      <h2 class="logo">
+        Atlas Analytica
+      </h2>
+
+      <p class="sub">
+        CONTENT ADMINISTRATION
+      </p>
+
+      <nav>
+
+        <button class="active" data-view="dashboard">
+          Dashboard
+        </button>
+
+        <button data-view="articles">
+          Articles
+        </button>
+
+        <button data-view="new">
+          + New Article
+        </button>
+
+      </nav>
+
+      <div class="session">
+
+        Signed in as
+        <span id="sessionEmail">—</span>
+
+        <br>
+
+        <button onclick="logout()">
+          Sign out
+        </button>
+
+      </div>
+
+    </aside>
+
+
+    <main>
+
+      <!-- DASHBOARD -->
+
+      <section id="dashboard" class="view">
+
+        <div class="top">
+
+          <div>
+
+            <div class="eyebrow">
+              Admin panel
+            </div>
+
+            <h1>
+              Dashboard
+            </h1>
+
+            <div class="muted">
+              Manage publications stored in Supabase.
+            </div>
+
+          </div>
+
+          <div class="actions">
+
+            <button class="btn primary" onclick="showView('new')">
+              + New Article
+            </button>
+
+          </div>
+
+        </div>
+
+
+        <div class="stats">
+
+          <div class="stat">
+            <strong id="total">0</strong>
+            <span>Total articles</span>
+          </div>
+
+          <div class="stat">
+            <strong id="published">0</strong>
+            <span>Published</span>
+          </div>
+
+          <div class="stat">
+            <strong id="drafts">0</strong>
+            <span>Drafts</span>
+          </div>
+
+        </div>
+
+
+        <div class="panel" style="margin-top:24px">
+
+          <div class="eyebrow">
+            Recent publications
+          </div>
+
+          <h2>
+            Articles
+          </h2>
+
+          <div id="recent"></div>
+
+        </div>
+
+      </section>
+
+
+      <!-- ARTICLES -->
+
+      <section id="articles" class="view hidden">
+
+        <div class="top">
+
+          <div>
+
+            <div class="eyebrow">
+              Content
+            </div>
+
+            <h1>
+              Articles
+            </h1>
+
+            <div class="muted">
+              Create, edit, publish and remove articles.
+            </div>
+
+          </div>
+
+          <div class="actions">
+
+            <button class="btn primary" onclick="showView('new')">
+              + New Article
+            </button>
+
+          </div>
+
+        </div>
+
+
+        <div class="panel">
+
+          <div class="toolbar">
+
+            <input id="search" class="search" placeholder="Search articles..." oninput="renderArticles()">
+
+            <button class="btn" onclick="exportData()">
+              Export JSON
+            </button>
+
+          </div>
+
+          <div id="articleTable"></div>
+
+        </div>
+
+      </section>
+
+
+      <!-- NEW / EDIT ARTICLE -->
+
+      <section id="new" class="view hidden">
+
+        <div class="top">
+
+          <div>
+
+            <div class="eyebrow">
+              Editor
+            </div>
+
+            <h1 id="editorTitle">
+              New Article
+            </h1>
+
+            <div class="muted">
+              Upload an image and save the article directly to Supabase.
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <form id="articleForm" class="panel">
+
+          <input type="hidden" id="editId">
+
+
+          <div class="form-grid">
+
+            <div>
+
+              <div class="field">
+
+                <label>
+                  Article title
+                </label>
+
+                <input id="title" required placeholder="Enter the article title">
+
+              </div>
+
+
+              <div class="field">
+
+                <label>
+                  Excerpt
+                </label>
+
+                <textarea id="excerpt" required placeholder="Short description shown on the homepage"></textarea>
+
+              </div>
+
+
+              <div class="field">
+
+                <label>
+                  Article content
+                </label>
+
+                <textarea id="content" class="content" required placeholder="Write the full article here..."></textarea>
+
+              </div>
+
+            </div>
+
+
+            <div>
+
+              <div class="field">
+
+                <label>
+                  Category
+                </label>
+
+                <input id="tag" required placeholder="Conflict, Policy, Geopolitics...">
+
+              </div>
+
+
+              <div class="field">
+
+                <label>
+                  Publication date
+                </label>
+
+                <input id="date" type="date" required>
+
+              </div>
+
+
+              <div class="field">
+
+                <label>
+                  Read time
+                </label>
+
+                <input id="readTime" value="5 min read">
+
+              </div>
+
+
+              <div class="field">
+
+                <label>
+                  Article image
+                </label>
+
+                <div class="upload">
+
+                  <input id="image" type="file" accept="image/*">
+
+                  <img id="preview" class="preview" alt="Preview">
+
+                </div>
+
+              </div>
+
+
+              <div class="field">
+
+                <label>
+                  Status
+                </label>
+
+                <select id="status">
+
+                  <option value="published">
+                    Published
+                  </option>
+
+                  <option value="draft">
+                    Draft
+                  </option>
+
+                </select>
+
+              </div>
+
+
+              <div class="field">
+
+                <label>
+                  Featured
+                </label>
+
+                <select id="featured">
+
+                  <option value="false">
+                    No
+                  </option>
+
+                  <option value="true">
+                    Yes
+                  </option>
+
+                </select>
+
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <div class="actions">
+
+            <button type="button" class="btn" onclick="resetForm();showView('articles')">
+              Cancel
+            </button>
+
+            <button id="saveBtn" type="submit" class="btn primary">
+              Save Article
+            </button>
+
+          </div>
+
+        </form>
+
+      </section>
+
+    </main>
+
+  </div>
+
+
+  <div id="toast" class="toast"></div>
+
+
+  <script>
+
+    const SUPABASE_CONFIGURED =
+      window.ATLAS_SUPABASE_URL &&
+      window.ATLAS_SUPABASE_KEY &&
+      !window.ATLAS_SUPABASE_URL.includes("YOUR_PROJECT") &&
+      !window.ATLAS_SUPABASE_KEY.includes("YOUR_PUBLISHABLE") &&
+      !window.ATLAS_SUPABASE_KEY.includes("YOUR_ANON");
+
+
+    /*
+      IMPORTANT:
+    
+      Supabase's CDN creates:
+    
+          window.supabase
+    
+      We therefore create OUR client as:
+    
+          atlasSupabase
+    
+      Never call it `supabase`, otherwise the browser can throw:
+    
+          Identifier 'supabase' has already been declared
+    */
+
+    const atlasSupabase = window.supabase.createClient(
+      window.ATLAS_SUPABASE_URL,
+      window.ATLAS_SUPABASE_KEY
+    );
+
+
+    let articles = [];
+    let currentUser = null;
+
+
+    /* --------------------------------
+       HELPERS
+    -------------------------------- */
+
+    function esc(value) {
+
+      return String(value ?? "").replace(
+        /[&<>"']/g,
+        function (character) {
+
+          return {
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#039;"
+          }[character];
+
+        }
+      );
+
+    }
+
+
+    function slugify(value) {
+
+      return value
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "");
+
+    }
+
+
+    function toast(message) {
+
+      const element =
+        document.getElementById("toast");
+
+      element.textContent = message;
+      element.style.display = "block";
+
+      setTimeout(
+        () => {
+          element.style.display = "none";
+        },
+        2500
+      );
+
+    }
+
+
+    function loginMessage(
+      message,
+      type = "error"
+    ) {
+
+      document.getElementById(
+        "loginMessage"
+      ).innerHTML =
+        message
+          ? `<div class="${type}">${esc(message)}</div>`
+          : "";
+
+    }
+
+
+    /* --------------------------------
+       AUTH
+    -------------------------------- */
+
+    async function ensureAdmin(user) {
+
+      const {
+        data,
+        error
+      } = await atlasSupabase
+        .from("admin_users")
+        .select("user_id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+
+      if (error) {
+
+        throw error;
+
+      }
+
+
+      if (!data) {
+
+        throw new Error(
+          "This Supabase account is not listed as an Atlas Analytica admin."
+        );
+
+      }
+
+    }
+
+
+    async function boot() {
+
+      if (!SUPABASE_CONFIGURED) {
+
+        document
+          .getElementById("loginView")
+          .classList
+          .remove("hidden");
+
+        loginMessage(
+          "Add your Supabase URL and publishable/anon key to supabase-config.js before signing in."
+        );
+
+        return;
+
+      }
+
+
+      const {
+        data: {
+          session
+        }
+      } =
+        await atlasSupabase.auth.getSession();
+
+
+      if (session?.user) {
+
+        try {
+
+          await enterApp(session.user);
+
+        } catch (error) {
+
+          await atlasSupabase.auth.signOut();
+
+          showLogin(error.message);
+
+        }
+
+      } else {
+
+        showLogin();
+
+      }
+
+
+      atlasSupabase.auth.onAuthStateChange(
+        async (_event, session) => {
+
+          if (session?.user) {
+
+            try {
+
+              await enterApp(session.user);
+
+            } catch (error) {
+
+              showLogin(error.message);
+
+            }
+
+          } else {
+
+            showLogin();
+
+          }
+
+        }
+      );
+
+    }
+
+
+    function showLogin(message = "") {
+
+      document
+        .getElementById("appView")
+        .classList
+        .add("hidden");
+
+      document
+        .getElementById("loginView")
+        .classList
+        .remove("hidden");
+
+      loginMessage(message);
+
+    }
+
+
+    async function enterApp(user) {
+
+      await ensureAdmin(user);
+
+      currentUser = user;
+
+      document
+        .getElementById("loginView")
+        .classList
+        .add("hidden");
+
+      document
+        .getElementById("appView")
+        .classList
+        .remove("hidden");
+
+      document
+        .getElementById("sessionEmail")
+        .textContent =
+        user.email || "admin";
+
+      await loadArticles();
+
+      updateStats();
+
+    }
+
+
+    async function logout() {
+
+      await atlasSupabase.auth.signOut();
+
+    }
+
+
+    /* --------------------------------
+       ARTICLES
+    -------------------------------- */
+
+    async function loadArticles() {
+
+      const {
+        data,
+        error
+      } =
+        await atlasSupabase
+          .from("articles")
+          .select("*")
+          .order(
+            "date",
+            {
+              ascending: false
+            }
+          )
+          .order(
+            "created_at",
+            {
+              ascending: false
+            }
+          );
+
+
+      if (error) {
+
+        throw error;
+
+      }
+
+
+      articles = data || [];
+
+    }
+
+
+    /* --------------------------------
+       TABLE
+    -------------------------------- */
+
+    function tableHTML(
+      list,
+      actions = true
+    ) {
+
+      if (!list.length) {
+
+        return `
+      <div class="empty">
+        No articles found.
+      </div>
+    `;
+
+      }
+
+
+      return `
+
+    <table>
+
+      <thead>
+
+        <tr>
+
+          <th>
+            Article
+          </th>
+
+          <th>
+            Category
+          </th>
+
+          <th>
+            Date
+          </th>
+
+          <th>
+            Status
+          </th>
+
+          ${actions
+          ? "<th>Actions</th>"
+          : ""
+        }
+
+        </tr>
+
+      </thead>
+
+      <tbody>
+
+        ${list.map(
+          article => `
+
+              <tr>
+
+                <td>
+
+                  <strong>
+                    ${esc(article.title)}
+                  </strong>
+
+                  <br>
+
+                  <span class="muted">
+
+                    ${esc(article.excerpt)
+              .slice(0, 110)
+            }
+
+                    ${article.excerpt.length > 110
+              ? "…"
+              : ""
+            }
+
+                  </span>
+
+                </td>
+
+                <td>
+                  ${esc(article.tag)}
+                </td>
+
+                <td>
+                  ${esc(article.date)}
+                </td>
+
+                <td>
+
+                  <span
+                    class="badge ${article.status}"
+                  >
+
+                    ${esc(article.status)}
+
+                  </span>
+
+                </td>
+
+                ${actions
+              ? `
+
+                      <td>
+
+                        <button
+                          class="btn"
+                          onclick="editArticle('${esc(article.id)}')"
+                        >
+                          Edit
+                        </button>
+
+                        <button
+                          class="btn danger"
+                          onclick="deleteArticle('${esc(article.id)}')"
+                        >
+                          Delete
+                        </button>
+
+                      </td>
+
+                    `
+              : ""
+            }
+
+              </tr>
+
+            `
+        ).join("")
+        }
+
+      </tbody>
+
+    </table>
+
+  `;
+
+    }
+
+
+    /* --------------------------------
+       DASHBOARD
+    -------------------------------- */
+
+    function updateStats() {
+
+      document.getElementById("total")
+        .textContent =
+        articles.length;
+
+
+      document.getElementById("published")
+        .textContent =
+        articles.filter(
+          article =>
+            article.status === "published"
+        ).length;
+
+
+      document.getElementById("drafts")
+        .textContent =
+        articles.filter(
+          article =>
+            article.status === "draft"
+        ).length;
+
+
+      document.getElementById("recent")
+        .innerHTML =
+        tableHTML(
+          articles.slice(0, 5),
+          false
+        );
+
+    }
+
+
+    /* --------------------------------
+       SEARCH
+    -------------------------------- */
+
+    function renderArticles() {
+
+      const search =
+        document.getElementById("search");
+
+      const query =
+        (search?.value || "")
+          .toLowerCase();
+
+
+      const filtered =
+        articles.filter(
+          article =>
+            (
+              article.title +
+              article.tag +
+              article.excerpt
+            )
+              .toLowerCase()
+              .includes(query)
+        );
+
+
+      document.getElementById(
+        "articleTable"
+      ).innerHTML =
+        tableHTML(filtered);
+
+    }
+
+
+    /* --------------------------------
+       NAVIGATION
+    -------------------------------- */
+
+    function showView(view) {
+
+      document
+        .querySelectorAll(".view")
+        .forEach(
+          element =>
+            element.classList.add("hidden")
+        );
+
+
+      document
+        .getElementById(view)
+        .classList
+        .remove("hidden");
+
+
+      document
+        .querySelectorAll("nav button")
+        .forEach(
+          button =>
+            button.classList.toggle(
+              "active",
+              button.dataset.view === view
+            )
+        );
+
+
+      if (view === "articles") {
+
+        renderArticles();
+
+      }
+
+
+      if (view === "dashboard") {
+
+        updateStats();
+
+      }
+
+
+      if (view === "new") {
+
+        document
+          .getElementById("editorTitle")
+          .textContent =
+          document.getElementById("editId").value
+            ? "Edit Article"
+            : "New Article";
+
+      }
+
+
+      window.scrollTo(
+        0,
+        0
+      );
+
+    }
+
+
+    /* --------------------------------
+       NAV BUTTONS
+    -------------------------------- */
+
+    document
+      .querySelectorAll("nav button")
+      .forEach(
+        button => {
+
+          button.onclick =
+            () => {
+
+              if (button.dataset.view === "new") {
+
+                resetForm();
+
+              }
+
+              showView(
+                button.dataset.view
+              );
+
+            };
+
+        }
+      );
+
+
+    /* --------------------------------
+       FORM RESET
+    -------------------------------- */
+
+    function resetForm() {
+
+      document
+        .getElementById("articleForm")
+        .reset();
+
+
+      document
+        .getElementById("editId")
+        .value = "";
+
+
+      document
+        .getElementById("date")
+        .value =
+        new Date()
+          .toISOString()
+          .slice(0, 10);
+
+
+      const preview =
+        document.getElementById("preview");
+
+
+      preview.style.display = "none";
+      preview.src = "";
+
+
+      document
+        .getElementById("editorTitle")
+        .textContent =
+        "New Article";
+
+
+      document
+        .getElementById("saveBtn")
+        .disabled =
+        false;
+
+    }
+
+
+    /* --------------------------------
+       IMAGE PREVIEW
+    -------------------------------- */
+
+    document
+      .getElementById("image")
+      .onchange =
+      function () {
+
+        const file =
+          this.files[0];
+
+        if (!file) {
+
+          return;
+
+        }
+
+
+        const reader =
+          new FileReader();
+
+
+        reader.onload =
+          function () {
+
+            const preview =
+              document.getElementById(
+                "preview"
+              );
+
+            preview.src =
+              reader.result;
+
+            preview.style.display =
+              "block";
+
+          };
+
+
+        reader.readAsDataURL(file);
+
+      };
+
+
+    /* --------------------------------
+       STORAGE IMAGE UPLOAD
+    -------------------------------- */
+
+    async function uploadImage(
+      file,
+      articleId
+    ) {
+
+      const extension =
+        (
+          file.name
+            .split(".")
+            .pop() ||
+          "jpg"
+        )
+          .toLowerCase()
+          .replace(
+            /[^a-z0-9]/g,
+            ""
+          );
+
+
+      const filePath =
+        `${articleId}-${Date.now()}.${extension || "jpg"}`;
+
+
+      const {
+        error
+      } =
+        await atlasSupabase
+          .storage
+          .from("article-images")
+          .upload(
+            filePath,
+            file,
+            {
+              upsert: false,
+              cacheControl: "3600"
+            }
+          );
+
+
+      if (error) {
+
+        throw error;
+
+      }
+
+
+      const {
+        data
+      } =
+        atlasSupabase
+          .storage
+          .from("article-images")
+          .getPublicUrl(
+            filePath
+          );
+
+
+      return data.publicUrl;
+
+    }
+
+
+    /* --------------------------------
+       SAVE ARTICLE
+    -------------------------------- */
+
+    document
+      .getElementById("articleForm")
+      .onsubmit =
+      async function (event) {
+
+        event.preventDefault();
+
+
+        const saveButton =
+          document.getElementById(
+            "saveBtn"
+          );
+
+
+        saveButton.disabled =
+          true;
+
+
+        try {
+
+          const editId =
+            document.getElementById(
+              "editId"
+            ).value;
+
+
+          const existing =
+            articles.find(
+              article =>
+                article.id === editId
+            );
+
+
+          const titleValue =
+            document
+              .getElementById("title")
+              .value
+              .trim();
+
+
+          const articleId =
+            editId ||
+            slugify(titleValue) ||
+            `article-${Date.now()}`;
+
+
+          let imageUrl =
+            existing?.image || "";
+
+
+          const imageInput =
+            document.getElementById(
+              "image"
+            );
+
+
+          if (imageInput.files[0]) {
+
+            imageUrl =
+              await uploadImage(
+                imageInput.files[0],
+                articleId
+              );
+
+          }
+
+
+          const article = {
+
+            id: articleId,
+
+            tag:
+              document
+                .getElementById("tag")
+                .value
+                .trim(),
+
+            title:
+              titleValue,
+
+            excerpt:
+              document
+                .getElementById("excerpt")
+                .value
+                .trim(),
+
+            content:
+              document
+                .getElementById("content")
+                .value
+                .trim(),
+
+            date:
+              document
+                .getElementById("date")
+                .value,
+
+            read_time:
+              document
+                .getElementById("readTime")
+                .value
+                .trim() ||
+              "5 min read",
+
+            image:
+              imageUrl,
+
+            status:
+              document
+                .getElementById("status")
+                .value,
+
+            featured:
+              document
+                .getElementById("featured")
+                .value === "true"
+
+          };
+
+
+          let result;
+
+
+          if (existing) {
+
+            result =
+              await atlasSupabase
+                .from("articles")
+                .update(article)
+                .eq("id", articleId)
+                .select()
+                .single();
+
+          } else {
+
+            result =
+              await atlasSupabase
+                .from("articles")
+                .insert(article)
+                .select()
+                .single();
+
+          }
+
+
+          if (result.error) {
+
+            throw result.error;
+
+          }
+
+
+          await loadArticles();
+
+          updateStats();
+
+          toast(
+            existing
+              ? "Article updated in Supabase"
+              : "Article saved to Supabase"
+          );
+
+
+          resetForm();
+
+          showView(
+            "articles"
+          );
+
+
+        } catch (error) {
+
+          console.error(
+            "Article save error:",
+            error
+          );
+
+
+          toast(
+            error.message ||
+            "Could not save article"
+          );
+
+
+        } finally {
+
+          saveButton.disabled =
+            false;
+
+        }
+
+      };
+
+
+    /* --------------------------------
+       EDIT
+    -------------------------------- */
+
+    function editArticle(id) {
+
+      const article =
+        articles.find(
+          item =>
+            item.id === id
+        );
+
+
+      if (!article) {
+
+        return;
+
+      }
+
+
+      document
+        .getElementById("editId")
+        .value =
+        article.id;
+
+
+      document
+        .getElementById("title")
+        .value =
+        article.title;
+
+
+      document
+        .getElementById("tag")
+        .value =
+        article.tag;
+
+
+      document
+        .getElementById("excerpt")
+        .value =
+        article.excerpt;
+
+
+      document
+        .getElementById("content")
+        .value =
+        article.content;
+
+
+      document
+        .getElementById("date")
+        .value =
+        article.date;
+
+
+      document
+        .getElementById("readTime")
+        .value =
+        article.read_time;
+
+
+      document
+        .getElementById("status")
+        .value =
+        article.status;
+
+
+      document
+        .getElementById("featured")
+        .value =
+        String(
+          !!article.featured
+        );
+
+
+      if (article.image) {
+
+        const preview =
+          document.getElementById(
+            "preview"
+          );
+
+        preview.src =
+          article.image;
+
+        preview.style.display =
+          "block";
+
+      }
+
+
+      document
+        .getElementById("editorTitle")
+        .textContent =
+        "Edit Article";
+
+
+      showView(
+        "new"
+      );
+
+    }
+
+
+    /* --------------------------------
+       DELETE
+    -------------------------------- */
+
+    async function deleteArticle(id) {
+
+      if (
+        !confirm(
+          "Delete this article?"
+        )
+      ) {
+
+        return;
+
+      }
+
+
+      try {
+
+        const {
+          error
+        } =
+          await atlasSupabase
+            .from("articles")
+            .delete()
+            .eq("id", id);
+
+
+        if (error) {
+
+          throw error;
+
+        }
+
+
+        await loadArticles();
+
+        updateStats();
+
+        renderArticles();
+
+        toast(
+          "Article deleted"
+        );
+
+
+      } catch (error) {
+
+        console.error(
+          "Delete error:",
+          error
+        );
+
+
+        toast(
+          error.message ||
+          "Delete failed"
+        );
+
+      }
+
+    }
+
+
+    /* --------------------------------
+       EXPORT
+    -------------------------------- */
+
+    async function exportData() {
+
+      await loadArticles();
+
+
+      const blob =
+        new Blob(
+          [
+            JSON.stringify(
+              articles,
+              null,
+              2
+            )
+          ],
+          {
+            type: "application/json"
+          }
+        );
+
+
+      const url =
+        URL.createObjectURL(
+          blob
+        );
+
+
+      const link =
+        document.createElement(
+          "a"
+        );
+
+
+      link.href =
+        url;
+
+      link.download =
+        "atlas-articles.json";
+
+
+      link.click();
+
+
+      URL.revokeObjectURL(
+        url
+      );
+
+    }
+
+
+    /* --------------------------------
+       LOGIN FORM
+    -------------------------------- */
+
+    document
+      .getElementById("loginForm")
+      .onsubmit =
+      async function (event) {
+
+        event.preventDefault();
+
+        loginMessage("");
+
+
+        const email =
+          document
+            .getElementById(
+              "loginEmail"
+            )
+            .value;
+
+
+        const password =
+          document
+            .getElementById(
+              "loginPassword"
+            )
+            .value;
+
+
+        const {
+          error
+        } =
+          await atlasSupabase.auth.signInWithPassword({
+
+            email,
+            password
+
+          });
+
+
+        if (error) {
+
+          loginMessage(
+            error.message
+          );
+
+        }
+
+      };
+
+
+    /* --------------------------------
+       START
+    -------------------------------- */
+
+    document
+      .getElementById("date")
+      .value =
+      new Date()
+        .toISOString()
+        .slice(0, 10);
+
+
+    boot();
+
+  </script>
+
+</body>
+
+</html>

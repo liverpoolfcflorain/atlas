@@ -1,34 +1,33 @@
-# Atlas Analytica Website
+# Atlas Analytica — Supabase Admin CMS
 
-A lightweight editorial website prototype built around the Atlas Analytica visual identity.
+This version connects the admin panel and public frontend to Supabase.
 
-## Structure
+## Files
+- `index.html` — public homepage, now reads published articles from Supabase.
+- `article.html` — public article page, reads the selected published article from Supabase.
+- `admin.html` — password login + article management.
+- `supabase-config.js` — your Supabase project URL + publishable/anon key.
+- `supabase-schema.sql` — database, RLS, admin, and Storage setup.
 
-- `index.html` — homepage and article preview grid
-- `article.html` — dedicated article/PDF reader
-- `styles.css` — full responsive design
-- `app.js` — homepage article data
-- `article.js` — PDF.js sliding reader
-- `assets/logo.png` — extracted Atlas Analytica logo
-- `articles/*.pdf` — sample placeholder PDFs
+## Setup
+1. Create a Supabase project.
+2. In Supabase SQL Editor, run `supabase-schema.sql`.
+3. In Authentication > Users, create the admin email/password account.
+4. Copy that Auth user's UUID.
+5. Run the final `insert into public.admin_users ...` statement in `supabase-schema.sql` with the real UUID.
+6. Edit `supabase-config.js` and replace the two placeholders with your Supabase project URL and publishable/anon key.
+7. Serve the folder from a web server (not `file://`) and open `admin.html`.
+8. Sign in and create an article. The image is uploaded to Supabase Storage and the article row is saved in Postgres.
+9. Open `index.html`: only published articles appear. The article link opens `article.html?id=...`.
 
-## Adding a real article
+## Security
+The browser uses only the Supabase publishable/anon key. Do NOT put a service_role/secret key in `supabase-config.js`.
+RLS policies restrict article writes and Storage uploads to users listed in `public.admin_users`.
 
-1. Put the final PDF in `articles/`.
-2. Add/update its entry in the `articles` array in both `app.js` and `article.js`.
-3. Set the `slug` to the exact PDF filename without `.pdf`.
-4. Replace the image URL with the article cover.
 
-## Running locally
-
-Because PDF.js uses module imports, serve the folder with a local server.
-
-Python:
-`python3 -m http.server 5500`
-
-Then open:
-`http://localhost:5500`
-
-## Deployment
-
-This can be deployed directly as a static site to Cloudflare Pages, Netlify, Vercel, GitHub Pages, or any normal web server.
+## Important browser fix
+The Supabase CDN exposes a global `window.supabase`. The public pages now use
+`atlasSupabase` for the created client, avoiding the browser's
+`Identifier 'supabase' has already been declared` error. The homepage also has
+a loader safety fallback so a JavaScript error cannot leave the loading screen
+visible indefinitely.
